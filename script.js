@@ -1,18 +1,16 @@
 /**
  * To-Let — high-craft interactions
- * Multiplayer-style floating tags, mouse parallax, spring physics, ambient motion
- * Respects prefers-reduced-motion
+ * Organic multiplayer tags, spring physics, mouse parallax, magnetic buttons
  */
 
 (function () {
   "use strict";
 
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   // ---------- Mobile nav ----------
   const menuToggle = document.getElementById("menuToggle");
   const navLinks = document.getElementById("navLinks");
-
   if (menuToggle && navLinks) {
     menuToggle.addEventListener("click", () => {
       const open = navLinks.classList.toggle("open");
@@ -40,9 +38,8 @@
     });
   });
 
-  // ---------- Waitlist (localStorage demo) ----------
+  // ---------- Waitlist ----------
   const STORAGE_KEY = "tolet-waitlist";
-
   function getWaitlist() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -51,198 +48,161 @@
       return [];
     }
   }
-
   function saveWaitlist(list) {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
     } catch (_) {}
   }
-
   function refreshCount() {
     const el = document.getElementById("socialProof");
     if (!el) return;
     const n = getWaitlist().length;
     el.textContent =
       n > 0
-        ? `${n} people have already joined the waitlist.`
+        ? n + " people have already joined the waitlist."
         : "Be the first to join the waitlist.";
   }
-
   refreshCount();
 
-  // ---------- Signup form ----------
   const form = document.getElementById("signupForm");
   const msg = document.getElementById("formMsg");
   const submitBtn = document.getElementById("submitBtn");
-
   if (form) {
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       const name = document.getElementById("name").value.trim();
       const email = document.getElementById("email").value.trim();
       const area = document.getElementById("area").value.trim();
-
       if (!name || !email) {
         msg.textContent = "Please fill in your name and email.";
         msg.className = "form-msg err";
         return;
       }
-
       submitBtn.disabled = true;
       submitBtn.textContent = "Joining…";
-
-      const entry = {
-        name,
-        email,
-        area,
-        role: selectedRole,
-        joinedAt: new Date().toISOString(),
-      };
-
+      const entry = { name: name, email: email, area: area, role: selectedRole, joinedAt: new Date().toISOString() };
       const list = getWaitlist();
       list.push(entry);
       saveWaitlist(list);
-
-      msg.textContent = `You're on the list, ${name.split(" ")[0]}. We'll email you when To-Let is live in your area.`;
+      msg.textContent = "You're on the list, " + name.split(" ")[0] + ". We'll email you when To-Let is live in your area.";
       msg.className = "form-msg ok";
       form.reset();
-      document.querySelectorAll(".role-btn").forEach((b) => {
-        b.classList.remove("active");
-        b.setAttribute("aria-pressed", "false");
-      });
-      const renterBtn = document.querySelector('.role-btn[data-role="renter"]');
-      if (renterBtn) {
-        renterBtn.classList.add("active");
-        renterBtn.setAttribute("aria-pressed", "true");
-      }
+      document.querySelectorAll(".role-btn").forEach((b) => b.classList.remove("active"));
+      document.querySelector('.role-btn[data-role="renter"]').classList.add("active");
       selectedRole = "renter";
       refreshCount();
-
       submitBtn.disabled = false;
       submitBtn.textContent = "Join the waitlist →";
     });
   }
 
-  // ---------- Entrance reveals ----------
-  if (!reduceMotion) {
-    const cards = document.querySelectorAll(
-      ".feature-card, .price-card, .pin-card, .compare-card, .float-card"
-    );
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("is-visible");
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.1, rootMargin: "0px 0px -30px 0px" }
-    );
-    cards.forEach((card) => observer.observe(card));
-  } else {
-    document.querySelectorAll(".feature-card, .price-card, .pin-card, .compare-card, .float-card")
-      .forEach((c) => c.classList.add("is-visible"));
+  if (reduced) return;
+
+  // ---------- Organic multiplayer tags ----------
+  const stage = document.querySelector(".hero");
+  const tags = document.querySelectorAll(".mp-tag");
+  if (stage && tags.length) {
+    const motions = Array.from(tags).map(function (el, i) {
+      return {
+        el: el,
+        x: 8 + Math.random() * 70,
+        y: 12 + Math.random() * 55,
+        vx: (Math.random() - 0.5) * 0.035,
+        vy: (Math.random() - 0.5) * 0.028,
+        rot: (Math.random() - 0.5) * 8,
+        rotV: (Math.random() - 0.5) * 0.04,
+        phase: Math.random() * Math.PI * 2
+      };
+    });
+
+    function tickTags() {
+      motions.forEach(function (m, i) {
+        m.phase += 0.008 + i * 0.001;
+        m.x += m.vx + Math.sin(m.phase) * 0.012;
+        m.y += m.vy + Math.cos(m.phase * 0.9) * 0.01;
+        m.rot += m.rotV;
+        if (m.x < 2 || m.x > 88) m.vx *= -1;
+        if (m.y < 4 || m.y > 72) m.vy *= -1;
+        m.x = Math.max(2, Math.min(88, m.x));
+        m.y = Math.max(4, Math.min(72, m.y));
+        m.el.style.left = m.x + "%";
+        m.el.style.top = m.y + "%";
+        m.el.style.transform = "rotate(" + m.rot + "deg)";
+      });
+      requestAnimationFrame(tickTags);
+    }
+    requestAnimationFrame(tickTags);
   }
 
-  // ---------- Hero interactive layer (Putty DNA) ----------
-  if (reduceMotion) return;
-
-  const hero = document.querySelector(".hero");
-  const floatStage = document.querySelector(".float-stage");
+  // ---------- Mouse parallax on float card ----------
   const floatCard = document.querySelector(".float-card");
-
-  // --- Multiplayer-style floating tags with cursor pointers ---
-  const tagData = [
-    { name: "Rafiul", color: "#ff2d8b", bg: "#fff0f6" },
-    { name: "Shirin", color: "#2ecc71", bg: "#f0fff4" },
-    { name: "Kamal", color: "#9b59b6", bg: "#f3f0ff" },
-    { name: "Nadia", color: "#f39c12", bg: "#fff8eb" },
-    { name: "Arif", color: "#3498db", bg: "#eef6ff" },
-  ];
-
-  // Enhance existing HTML tags with pointer arrows
-  document.querySelectorAll(".float-tag").forEach((tag, i) => {
-    if (!tag.querySelector(".cursor-arrow")) {
-      const arrow = document.createElement("span");
-      arrow.className = "cursor-arrow";
-      arrow.setAttribute("aria-hidden", "true");
-      tag.prepend(arrow);
-    }
-  });
-
-  // Soft mouse parallax on the listing card
-  if (floatStage && floatCard) {
-    let targetX = 0;
-    let targetY = 0;
-    let currentX = 0;
-    let currentY = 0;
-
-    floatStage.addEventListener("mousemove", (e) => {
-      const rect = floatStage.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      targetX = ((e.clientX - cx) / rect.width) * 18;
-      targetY = ((e.clientY - cy) / rect.height) * 14;
+  if (floatCard && stage) {
+    stage.addEventListener("mousemove", function (e) {
+      const r = stage.getBoundingClientRect();
+      const cx = (e.clientX - r.left) / r.width - 0.5;
+      const cy = (e.clientY - r.top) / r.height - 0.5;
+      floatCard.style.transform =
+        "perspective(900px) rotateY(" + cx * 8 + "deg) rotateX(" + -cy * 6 + "deg) translateY(-4px)";
     });
-
-    floatStage.addEventListener("mouseleave", () => {
-      targetX = 0;
-      targetY = 0;
+    stage.addEventListener("mouseleave", function () {
+      floatCard.style.transform = "";
     });
-
-    function parallaxLoop() {
-      currentX += (targetX - currentX) * 0.08;
-      currentY += (targetY - currentY) * 0.08;
-      floatCard.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) rotate(${currentX * 0.08}deg)`;
-      requestAnimationFrame(parallaxLoop);
-    }
-    requestAnimationFrame(parallaxLoop);
   }
 
-  // Soft magnetic hover on primary buttons
-  document.querySelectorAll(".btn-primary").forEach((btn) => {
-    btn.addEventListener("mousemove", (e) => {
-      const rect = btn.getBoundingClientRect();
-      const x = e.clientX - rect.left - rect.width / 2;
-      const y = e.clientY - rect.top - rect.height / 2;
-      btn.style.transform = `translate(${x * 0.12}px, ${y * 0.12}px) scale(1.04)`;
+  // ---------- Magnetic primary buttons ----------
+  document.querySelectorAll(".btn-primary").forEach(function (btn) {
+    btn.addEventListener("mousemove", function (e) {
+      const r = btn.getBoundingClientRect();
+      const x = e.clientX - r.left - r.width / 2;
+      const y = e.clientY - r.top - r.height / 2;
+      btn.style.transform = "translate(" + x * 0.18 + "px, " + y * 0.22 + "px) scale(1.03)";
     });
-    btn.addEventListener("mouseleave", () => {
+    btn.addEventListener("mouseleave", function () {
       btn.style.transform = "";
     });
   });
 
-  // Ambient floating tags that slowly roam the hero (desktop only)
-  if (hero && window.innerWidth > 900) {
-    const ambient = document.createElement("div");
-    ambient.className = "ambient-tags";
-    ambient.setAttribute("aria-hidden", "true");
-    hero.appendChild(ambient);
-
-    const positions = [
-      { top: "12%", left: "6%", delay: 0 },
-      { top: "28%", left: "78%", delay: 1.4 },
-      { top: "62%", left: "4%", delay: 2.8 },
-      { top: "18%", left: "88%", delay: 0.7 },
-      { top: "70%", left: "82%", delay: 2.1 },
-    ];
-
-    tagData.forEach((t, i) => {
-      const el = document.createElement("div");
-      el.className = "ambient-tag";
-      el.style.setProperty("--tag-bg", t.bg);
-      el.style.setProperty("--tag-color", t.color);
-      el.style.top = positions[i].top;
-      el.style.left = positions[i].left;
-      el.style.animationDelay = positions[i].delay + "s";
-      el.innerHTML = `<span class="cursor-arrow"></span><span class="dot" style="background:${t.color}"></span>${t.name}`;
-      ambient.appendChild(el);
-    });
-  }
-
-  // Gentle continuous float on existing .float-tag elements
-  document.querySelectorAll(".float-tag").forEach((tag, i) => {
-    tag.style.animationDelay = i * 0.9 + "s";
+  // ---------- Staggered reveal ----------
+  const revealEls = document.querySelectorAll(
+    ".feature-card, .price-card, .pin-card, .compare-card, .float-card, .section-head, .hero-stats > *"
+  );
+  const io = new IntersectionObserver(
+    function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-in");
+          io.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.12, rootMargin: "0px 0px -30px 0px" }
+  );
+  revealEls.forEach(function (el, i) {
+    el.style.setProperty("--delay", (i % 6) * 0.07 + "s");
+    el.classList.add("will-reveal");
+    io.observe(el);
   });
+
+  // ---------- Soft cursor trail (desktop only) ----------
+  if (window.matchMedia("(pointer: fine)").matches) {
+    const trail = document.createElement("div");
+    trail.className = "cursor-trail";
+    document.body.appendChild(trail);
+    var mx = 0, my = 0, tx = 0, ty = 0;
+    document.addEventListener("mousemove", function (e) {
+      mx = e.clientX;
+      my = e.clientY;
+      trail.style.opacity = "1";
+    });
+    document.addEventListener("mouseleave", function () {
+      trail.style.opacity = "0";
+    });
+    function trailLoop() {
+      tx += (mx - tx) * 0.18;
+      ty += (my - ty) * 0.18;
+      trail.style.transform = "translate(" + tx + "px, " + ty + "px)";
+      requestAnimationFrame(trailLoop);
+    }
+    requestAnimationFrame(trailLoop);
+  }
 })();
