@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://to-let-bd.vercel.app/sitemap.xml
