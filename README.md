@@ -1,16 +1,12 @@
 # To-Let BD
 
-Phone-verified Dhaka residential rental marketplace landing page.
+Phone-verified Dhaka residential rental marketplace.
 
-**Live:** [https://to-let-bd.vercel.app](https://to-let-bd.vercel.app)
+**Live:** https://to-let-bd.vercel.app
+
+**Working preview (full CSS):** https://to-let-3puvj0m8k-hopetheorybd-2156s-projects.vercel.app
 
 ## Stack
-- Static HTML / CSS / JS (no build step)
-- Design system inspired by Google Labs “Play with Putty”
-- Deployed on Vercel with security headers
+Static HTML / CSS / JS · Putty-inspired design · Vercel
 
-## Local
-Open `index.html` in a browser or serve the folder with any static server.
-
-## Product docs
-See the companion PRD, Technical Spec, GTM & Financial sketch in the project artifacts (private).
+Hard-refresh after deploy if styles look broken.
