@@ -8,7 +8,6 @@
 
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  // ---------- Mobile nav ----------
   const menuToggle = document.getElementById("menuToggle");
   const navLinks = document.getElementById("navLinks");
   if (menuToggle && navLinks) {
@@ -24,7 +23,6 @@
     });
   }
 
-  // ---------- Role toggle ----------
   let selectedRole = "renter";
   document.querySelectorAll(".role-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -38,7 +36,6 @@
     });
   });
 
-  // ---------- Waitlist ----------
   const STORAGE_KEY = "tolet-waitlist";
   function getWaitlist() {
     try {
@@ -80,11 +77,20 @@
       }
       submitBtn.disabled = true;
       submitBtn.textContent = "Joining…";
-      const entry = { name: name, email: email, area: area, role: selectedRole, joinedAt: new Date().toISOString() };
+      const entry = {
+        name: name,
+        email: email,
+        area: area,
+        role: selectedRole,
+        joinedAt: new Date().toISOString()
+      };
       const list = getWaitlist();
       list.push(entry);
       saveWaitlist(list);
-      msg.textContent = "You're on the list, " + name.split(" ")[0] + ". We'll email you when To-Let is live in your area.";
+      msg.textContent =
+        "You're on the list, " +
+        name.split(" ")[0] +
+        ". We'll email you when To-Let is live in your area.";
       msg.className = "form-msg ok";
       form.reset();
       document.querySelectorAll(".role-btn").forEach((b) => b.classList.remove("active"));
@@ -98,7 +104,7 @@
 
   if (reduced) return;
 
-  // ---------- Organic multiplayer tags ----------
+  // Organic multiplayer tags
   const stage = document.querySelector(".hero");
   const tags = document.querySelectorAll(".mp-tag");
   if (stage && tags.length) {
@@ -114,7 +120,6 @@
         phase: Math.random() * Math.PI * 2
       };
     });
-
     function tickTags() {
       motions.forEach(function (m, i) {
         m.phase += 0.008 + i * 0.001;
@@ -134,7 +139,7 @@
     requestAnimationFrame(tickTags);
   }
 
-  // ---------- Mouse parallax on float card ----------
+  // Float card parallax
   const floatCard = document.querySelector(".float-card");
   if (floatCard && stage) {
     stage.addEventListener("mousemove", function (e) {
@@ -142,27 +147,32 @@
       const cx = (e.clientX - r.left) / r.width - 0.5;
       const cy = (e.clientY - r.top) / r.height - 0.5;
       floatCard.style.transform =
-        "perspective(900px) rotateY(" + cx * 8 + "deg) rotateX(" + -cy * 6 + "deg) translateY(-4px)";
+        "perspective(900px) rotateY(" +
+        cx * 8 +
+        "deg) rotateX(" +
+        -cy * 6 +
+        "deg) translateY(-4px)";
     });
     stage.addEventListener("mouseleave", function () {
       floatCard.style.transform = "";
     });
   }
 
-  // ---------- Magnetic primary buttons ----------
+  // Magnetic primary buttons
   document.querySelectorAll(".btn-primary").forEach(function (btn) {
     btn.addEventListener("mousemove", function (e) {
       const r = btn.getBoundingClientRect();
       const x = e.clientX - r.left - r.width / 2;
       const y = e.clientY - r.top - r.height / 2;
-      btn.style.transform = "translate(" + x * 0.18 + "px, " + y * 0.22 + "px) scale(1.03)";
+      btn.style.transform =
+        "translate(" + x * 0.18 + "px, " + y * 0.22 + "px) scale(1.03)";
     });
     btn.addEventListener("mouseleave", function () {
       btn.style.transform = "";
     });
   });
 
-  // ---------- Staggered reveal ----------
+  // Staggered reveal
   const revealEls = document.querySelectorAll(
     ".feature-card, .price-card, .pin-card, .compare-card, .float-card, .section-head, .hero-stats > *"
   );
@@ -183,12 +193,15 @@
     io.observe(el);
   });
 
-  // ---------- Soft cursor trail (desktop only) ----------
+  // Soft cursor trail
   if (window.matchMedia("(pointer: fine)").matches) {
     const trail = document.createElement("div");
     trail.className = "cursor-trail";
     document.body.appendChild(trail);
-    var mx = 0, my = 0, tx = 0, ty = 0;
+    var mx = 0,
+      my = 0,
+      tx = 0,
+      ty = 0;
     document.addEventListener("mousemove", function (e) {
       mx = e.clientX;
       my = e.clientY;
@@ -205,4 +218,25 @@
     }
     requestAnimationFrame(trailLoop);
   }
+
+  // Hero left copy parallax
+  (function () {
+    const copy = document.getElementById("heroCopy");
+    const hero = document.querySelector(".hero");
+    if (!copy || !hero) return;
+    hero.addEventListener("mousemove", function (e) {
+      const r = hero.getBoundingClientRect();
+      const cx = (e.clientX - r.left) / r.width - 0.5;
+      const cy = (e.clientY - r.top) / r.height - 0.5;
+      copy.style.transform =
+        "perspective(800px) rotateY(" +
+        cx * 4 +
+        "deg) rotateX(" +
+        -cy * 3 +
+        "deg) translateZ(0)";
+    });
+    hero.addEventListener("mouseleave", function () {
+      copy.style.transform = "";
+    });
+  })();
 })();
