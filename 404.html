@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Page not found — To-Let</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .error-wrap {
+      min-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 24px;
+    }
+    .error-code {
+      font-size: clamp(4rem, 12vw, 7rem);
+      font-weight: 800;
+      letter-spacing: -0.05em;
+      color: var(--pink);
+      line-height: 1;
+    }
+    .error-wrap h1 { margin: 16px 0 12px; }
+    .error-wrap p { color: var(--ink-muted); max-width: 36ch; margin-bottom: 28px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="nav">
+      <a href="/" class="brand">
+        <span class="brand-mark">TL</span>
+        To-Let
+      </a>
+    </div>
+  </header>
+  <div class="error-wrap">
+    <div class="error-code">404</div>
+    <h1>This page moved out.</h1>
+    <p>The listing you’re looking for doesn’t exist — or it already expired. Head back home and find something still available.</p>
+    <a href="/" class="btn btn-primary">Back to To-Let</a>
+  </div>
+</body>
+</html>
